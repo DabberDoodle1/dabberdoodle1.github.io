@@ -1,0 +1,51 @@
+* {
+	font-family: 'Arial';
+	font-display: swap;
+	box-sizing: border-box;
+	font-size: 3vw;
+}
+
+body {
+	height: 100vh;
+	width: 100vw;
+	background: #000000;
+	overflow: hidden;
+}
+
+.center {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	translate: -50% -50%;
+}
+
+.flexCenter {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
+}
+
+.orbit {
+	translate: -50% -50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 90vmin;
+	height: 90vmin;
+	background: #FFFFFF;
+	border-radius: 50%;
+	mask: radial-gradient(transparent calc(45vmin - 2px),#000000 calc(45vmin));
+}
+
+#sun {
+	background: #FFFF00;
+	width: calc(90vmin / 30.05);
+	height: calc(90vmin / 30.05);
+	border-radius: 50%;
+}
+
+#main {
+	font-size: 4rem;
+	color: red;
+}
