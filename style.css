@@ -19,7 +19,6 @@ body {
 }
 
 .orbit {
-    background: #FFFFFF;
     border-radius: 50%;
 }
 
@@ -32,39 +31,70 @@ body {
     position: absolute;
     translate: -50% -50%;
     border-radius: 50%;
-    width: 10vw;
-    height: 10vw;
+    width: 1.5vw;
+    height: 1.5vw;
 }
 
 #mercury {
     background: #3b4a12;
 }
 
+#mercury-orbit {
+    background: #4c5b23;
+}
+
 #venus {
     background: #afcb78;
+}
+
+#venus-orbit {
+    background: #c0dc89;
 }
 
 #earth {
     background: #23abff;
 }
 
+#earth-orbit {
+    background: #34bcff;
+}
+
 #mars {
     background: #f45b00;
+}
+
+#mars-orbit {
+    background: #ff6c11;
 }
 
 #jupiter {
     background: #af9a4b;
 }
 
+#jupiter-orbit {
+    background: #c0ab5c;
+}
+
 #saturn {
     background: #cff448;
+}
+
+#saturn-orbit {
+    background: #e0ff59;
 }
 
 #uranus {
     background: #3ab0ff;
 }
 
+#uranus-orbit {
+    background: #4bc1ff;
+}
+
 #neptune {
     background: #0000ff;
 }
 
+#neptune-orbit {
+    background: #1111ff;
+}

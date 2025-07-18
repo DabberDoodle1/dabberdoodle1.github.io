@@ -4,47 +4,64 @@ titlePage.style.display = "none";
 
 // DOM elements
 const sun = document.getElementById("sun");
-const orbits = [
-    document.getElementById("mercury-orbit"),
-    document.getElementById("venus-orbit"),
-    document.getElementById("earth-orbit"),
-    document.getElementById("mars-orbit"),
-    document.getElementById("jupiter-orbit"),
-    document.getElementById("saturn-orbit"),
-    document.getElementById("uranus-orbit"),
-    document.getElementById("neptune-orbit")
-];
+const vminPerAu = 90 / 60.1;
 const planets = [
-    document.getElementById("mercury"),
-    document.getElementById("venus"),
-    document.getElementById("earth"),
-    document.getElementById("mars"),
-    document.getElementById("jupiter"),
-    document.getElementById("saturn"),
-    document.getElementById("uranus"),
-    document.getElementById("neptune")
-];
-
-const vminPerAu = 90 / 30.05;
-const vminPerOrbit = [
-    vminPerAu * 0.39,
-    vminPerAu * 0.72,
-    vminPerAu * 1.00,
-    vminPerAu * 1.52,
-    vminPerAu * 5.20,
-    vminPerAu * 9.68,
-    vminPerAu * 19.22,
-    vminPerAu * 30.05
-];
-const colors = [
-    "red",
-    'green',
-    "blue",
-    "orange",
-    "green",
-    "magenta",
-    "white",
-    "cyan"
+    {
+        orbit:    document.getElementById("mercury-orbit"),
+        planet:   document.getElementById("mercury"),
+        distance: vminPerAu * 0.39,
+        speed:    1 * Math.PI,
+        theta:    0
+    },
+    {
+        orbit:    document.getElementById("venus-orbit"),
+        planet:   document.getElementById("venus"),
+        distance: vminPerAu * 0.72,
+        speed:    88 / 225 * Math.PI,
+        theta:    0
+    },
+    {
+        orbit:    document.getElementById("earth-orbit"),
+        planet:   document.getElementById("earth"),
+        distance: vminPerAu * 1.00,
+        speed:    88 / 365.25 * Math.PI,
+        theta:    0
+    },
+    {
+        orbit:    document.getElementById("mars-orbit"),
+        planet:   document.getElementById("mars"),
+        distance: vminPerAu * 1.52,
+        speed:    88 / 687 * Math.PI,
+        theta:    0
+    },
+    {
+        orbit:    document.getElementById("jupiter-orbit"),
+        planet:   document.getElementById("jupiter"),
+        distance: vminPerAu * 5.20,
+        speed:    88 / 4333 * Math.PI,
+        theta:    0
+    },
+    {
+        orbit:    document.getElementById("saturn-orbit"),
+        planet:   document.getElementById("saturn"),
+        distance: vminPerAu * 9.68,
+        speed:    88 / 10759 * Math.PI,
+        theta:    0
+    },
+    {
+        orbit:    document.getElementById("uranus-orbit"),
+        planet:   document.getElementById("uranus"),
+        distance: vminPerAu * 19.22,
+        speed:    88 / 30688 * Math.PI,
+        theta:    0
+    },
+    {
+        orbit:    document.getElementById("neptune-orbit"),
+        planet:   document.getElementById("neptune"),
+        distance: vminPerAu * 30.05,
+        speed:    88 / 60190 * Math.PI,
+        theta:    0
+    },
 ];
 
 const zoomMagnitudes = [
@@ -62,40 +79,50 @@ const zoomMagnitudes = [
 const min = window.innerHeight < window.innerWidth ? window.innerHeight : window.innerWidth;
 const max = window.innerHeight > window.innerWidth ? window.innerHeight : window.innerWidth;
 
-let zoomIndex = 8;
+const startingTime = new Date();
+
+let zoomIndex = 1;
+let orbitId;
 
 document.addEventListener("DOMContentLoaded", () => {
     resize();
 
     for (let i = 0; i < 8; ++i) {
-        planets[i].style.top  = "50vh";
-        planets[i].style.left = `calc(50vw + ${vminPerOrbit[i] * zoomMagnitudes[zoomIndex]}vmin)`;
+        const planet = planets[i];
+        planet.planet.style.top  = "50%";
+        planet.planet.style.left = `calc(50% + ${2 * planet.distance * zoomMagnitudes[zoomIndex] / 2}vmin)`;
     }
 });
 
 document.onkeydown = event => {
-    if (event.key === "f") {
-        if (document.fullscreenElement) {
-            document.exitFullscreen();
-        } else {
-            document.documentElement.requestFullscreen().catch(error => console.log(error));
-        }
-    }
+    switch (event.key) {
+        case "f":
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else {
+                document.documentElement.requestFullscreen().catch(error => console.log(error));
+            }
+            break;
+        case " ":
+            if (event.shiftKey && !event.altKey) {
+                zoomIndex = ++zoomIndex > 8 ? 8 : zoomIndex;
+            }
 
-    if (event.key === " " && event.shiftKey && !event.altKey) {
-        if (++zoomIndex > 8) {
-            zoomIndex = 8;
-        }
-        resize();
-    }
-    
-    if (event.key === " " && !event.shiftKey && event.altKey) {
-        if (--zoomIndex < 0) {
-            zoomIndex = 0;
-        }
-        resize();
-    }
+            if (!event.shiftKey && event.altKey) {
+                zoomIndex = --zoomIndex < 0 ? 0 : zoomIndex;
+            }
 
+            resize();
+            break;
+        case "p":
+            if (orbitId === -1) {
+                orbitId = requestAnimationFrame(updatePlanets);
+            } else {
+                cancelAnimationFrame(orbitId);
+                orbitId = -1;
+            }
+            break;
+    }
 };
 
 function resize() {
@@ -103,17 +130,38 @@ function resize() {
     sun.style.height = `${vminPerAu * 0.0093 * zoomMagnitudes[zoomIndex]}vmin`;
 
     for (let i = 0; i < 8; ++i) {
-        const size = vminPerOrbit[i] * zoomMagnitudes[zoomIndex];
+        const planet = planets[i];
+        const size = planet.distance * zoomMagnitudes[zoomIndex];
 
         if (size * min / 100 > 2 * max) {
-            orbits[i].style.display = "none";
+            planet.orbit.style.display  = "none";
+            planet.planet.style.display = "none";
         } else {
-            orbits[i].style.display = "block";
+            planet.orbit.style.display  = "block";
+            planet.planet.style.display = "block";
         }
 
-        orbits[i].style.backgroundColor = colors[i];
-        orbits[i].style.width  = `${vminPerOrbit[i] * zoomMagnitudes[zoomIndex]}vmin`;
-        orbits[i].style.height = `${vminPerOrbit[i] * zoomMagnitudes[zoomIndex]}vmin`;
-        orbits[i].style.maskImage = `radial-gradient(transparent calc(${vminPerOrbit[i] / 2 * zoomMagnitudes[zoomIndex]}vmin - 2px), #000000 ${vminPerOrbit[i] / 2 * zoomMagnitudes[zoomIndex]}vmin)`;
+        planet.orbit.style.width  = `${2 * planet.distance * zoomMagnitudes[zoomIndex]}vmin`;
+        planet.orbit.style.height = `${2 * planet.distance * zoomMagnitudes[zoomIndex]}vmin`;
+        planet.orbit.style.maskImage = `radial-gradient(transparent calc(${planet.distance * zoomMagnitudes[zoomIndex]}vmin - 2px), #000000 ${planet.distance * zoomMagnitudes[zoomIndex]}vmin)`;
+
+        planet.planet.style.top  = `calc(50% + ${planet.distance * zoomMagnitudes[zoomIndex] * Math.sin(planet.theta)}vmin)`;
+        planet.planet.style.left = `calc(50% + ${planet.distance * zoomMagnitudes[zoomIndex] * Math.cos(planet.theta)}vmin)`;
     }
+}
+
+function updatePlanets() {
+    const now        = new Date();
+    const timePassed = (startingTime - now) / 1000;
+
+    for (let i = 0; i < 8; ++i) {
+        const planet = planets[i];
+
+        planet.theta = timePassed * planet.speed;
+
+        planet.planet.style.top  = `calc(50% + ${planet.distance * zoomMagnitudes[zoomIndex] * Math.sin(planet.theta)}vmin)`;
+        planet.planet.style.left = `calc(50% + ${planet.distance * zoomMagnitudes[zoomIndex] * Math.cos(planet.theta)}vmin)`;
+    }
+
+    requestAnimationFrame(updatePlanets);
 }
