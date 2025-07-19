@@ -31,8 +31,7 @@ body {
     position: absolute;
     translate: -50% -50%;
     border-radius: 50%;
-    width: 1.5vw;
-    height: 1.5vw;
+    box-shadow: 0 0 8px 1.5px #FFFFFF;
 }
 
 #mercury {
