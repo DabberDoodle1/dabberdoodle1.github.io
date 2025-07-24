@@ -1,7 +1,5 @@
-const titlePage = document.getElementById("title-page");
-const select    = document.getElementById("select");
-
-titlePage.style.display = "none";
+const select         = document.getElementById("select");
+const magnitudeLabel = document.getElementById("magnitudeLabel");
 
 select.style.top  = "50%";
 select.style.left = "50%";
@@ -167,6 +165,7 @@ document.onkeydown = event => {
             }
             
             const celestialBodySelect = celestialBodies[planetIndex];
+            renameLabel();
 
             select.style.width  = `${celestialBodySelect.size * celestialBodySelect.sizeAmp * zoomMagnitudes[zoomIndex] * 1.25}vmin`;
             select.style.height = `${celestialBodySelect.size * celestialBodySelect.sizeAmp * zoomMagnitudes[zoomIndex] * 1.25}vmin`;
@@ -197,13 +196,16 @@ document.onkeydown = event => {
                     sizeIndex = 0;
                 }
             }
-            
 
             celestialBodyResize.sizeAmp = planetIndex === 0 ? planetSizes[sizeIndex] / 100 : planetSizes[sizeIndex];
             resizePlanet(celestialBodyResize);
+            renameLabel();
             
             select.style.width  = `${celestialBodyResize.size * celestialBodyResize.sizeAmp * zoomMagnitudes[zoomIndex] * 1.2}vmin`;
             select.style.height = `${celestialBodyResize.size * celestialBodyResize.sizeAmp * zoomMagnitudes[zoomIndex] * 1.2}vmin`;
+            break;
+        case "Enter":
+            document.body.style.backgroundColor = "#1899DD";
             break;
     }
 };
@@ -284,4 +286,11 @@ function updatePlanets() {
     orbitId = requestAnimationFrame(updatePlanets);
 }
 
+function renameLabel() {
+    const celestialBody = celestialBodies[planetIndex];
+    magnitudeLabel.textContent = `${celestialBody.planet.id} size multiplier: ${celestialBody.sizeAmp.toLocaleString()}x`;
+}
+
 orbitId = requestAnimationFrame(updatePlanets);
+renameLabel();
+

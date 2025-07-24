@@ -1,7 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&display=swap');
+
 * {
-    font-family: 'Arial';
+    font-family: 'Merriweather', 'sans-serif';
     font-display: swap;
     box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 body {
@@ -9,6 +13,7 @@ body {
     width: 100vw;
     background: #000000;
     overflow: hidden;
+    transition: background-color 1.8s ease-in-out;
 }
 
 .center {
@@ -20,6 +25,15 @@ body {
 
 .orbit {
     border-radius: 50%;
+}
+
+#magnitudeLabel {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    font-size: 2vmin;
+    color: #FFFFFF;
+    font-weight: 400;
 }
 
 #sun {
