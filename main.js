@@ -1,5 +1,57 @@
 const userOnMobile = detectDevice();
 
+const solarSystem      = document.getElementById("solar-system");
+const planetNavigation = document.getElementById("planet-navigation");
+const toggle           = document.getElementById("toggle");
+
+planetNavigation.style.display = "none";
+
+const planetView       = document.getElementById("planet-view");
+const description      = document.getElementById("description");
+const descriptionText  = document.getElementById("description-text");
+const descriptionTitle = document.getElementById("description-title");
+const scan             = document.getElementById("scan");
+const prev             = document.getElementById("prev");
+const next             = document.getElementById("next");
+
+for (let i = 0; i < 8; ++i) {
+    for (let j = 0; j < 8; ++j) {
+        const star = document.createElement("section");
+        
+        star.classList.add("planet");
+        star.style.backgroundColor = "#FFFFFF";
+        
+        star.style.position = "absolute";
+        star.style.top      = `${(i + Math.random()) * 12.5}%`;
+        star.style.left     = `${(j + Math.random()) * 12.5}%`
+        star.style.width    = "0.75vmin";
+        star.style.height   = "0.75vmin";
+        star.style.zIndex   = "-1";
+        star.style.opacity  = "15%";
+        
+        solarSystem.appendChild(star);
+    }
+}
+
+for (let i = 0; i < 8; ++i) {
+    for (let j = 0; j < 8; ++j) {
+        const star = document.createElement("section");
+        
+        star.classList.add("planet");
+        star.style.backgroundColor = "#FFFFFF";
+        
+        star.style.position = "absolute";
+        star.style.top = `${(i + Math.random()) * 12.5}%`;
+        star.style.left = `${(j + Math.random()) * 12.5}%`
+        star.style.width = "0.75vmin";
+        star.style.height = "0.75vmin";
+        star.style.zIndex = "-1";
+        star.style.opacity = "15%";
+        
+        planetNavigation.appendChild(star);
+    }
+}
+
 const select         = document.getElementById("select");
 const magnitudeLabel = document.getElementById("magnitudeLabel");
 
@@ -120,6 +172,7 @@ let planetIndex = 0;
 let sizeIndex   = 0;
 let lastTime    = new Date();
 let orbitId;
+let onSolarSys  = true;
 
 let touchStartY = 0;
 let lastTouchTime = 0;
@@ -144,15 +197,17 @@ if (userOnMobile) {
 		}
 		
 		lastTouchTime = currentTouchTime;
-
-		if (Math.abs(touchDiffY) < window.innerHeight * 0.15) {
-			return;
-		}
-
-		if (touchDiffY > 0) {
-			zoomIndex = ++zoomIndex > 8 ? 8 : zoomIndex;
-		} else {
-			zoomIndex = --zoomIndex < 0 ? 0 : zoomIndex;
+		
+		if (onSolarSys) {
+		    if (Math.abs(touchDiffY) < window.innerHeight * 0.15) {
+		        return;
+		    }
+		    
+		    if (touchDiffY > 0) {
+		        zoomIndex = ++zoomIndex > 8 ? 8 : zoomIndex;
+    		} else {
+    			zoomIndex = --zoomIndex < 0 ? 0 : zoomIndex;
+    		}
 		}
 
 		resize();
@@ -164,14 +219,35 @@ if (userOnMobile) {
 	}
 
 	select.style.display = "none";
-	magnitudeLabel.innerHTML = "sun multiplier: 20,000x<br/>size multiplier: 2,000,000x";
+	magnitudeLabel.innerHTML = "sun size multiplier: 20,000x<br/>planet size multiplier: 2,000,000x";
 	
 	resize();
 } else {
 	renameLabel();
 }
 
-document.addEventListener("DOMContentLoaded", resize);
+toggle.addEventListener("click", () => {
+    if (onSolarSys) {
+        toggle.style.backgroundImage = "url(\"res/planet_view.png\")";
+        onSolarSys = false;
+        
+        planetNavigation.style.display = "block";
+        solarSystem.style.display      = "none";
+    } else {
+        toggle.style.backgroundImage = "url(\"res/solar_system.png\")";
+        onSolarSys = true;
+        
+        planetNavigation.style.display = "none";
+        solarSystem.style.display = "block";
+    }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    resize();
+    reload();
+});
+
+window.onresize = reload;
 
 document.onkeydown = event => {
     switch (event.key) {
@@ -183,46 +259,52 @@ document.onkeydown = event => {
             }
             break;
         case " ":
-            if (event.shiftKey && !event.altKey) {
-                zoomIndex = ++zoomIndex > 8 ? 8 : zoomIndex;
+            if (onSolarSys) {
+                if (event.shiftKey && !event.altKey) {
+                    zoomIndex = ++zoomIndex > 8 ? 8 : zoomIndex;
+                }
+                
+                if (!event.shiftKey && event.altKey) {
+                    zoomIndex = --zoomIndex < 0 ? 0 : zoomIndex;
+                }
+                
+                resize();
             }
-
-            if (!event.shiftKey && event.altKey) {
-                zoomIndex = --zoomIndex < 0 ? 0 : zoomIndex;
-            }
-
-            resize();
             break;
         case "p":
-            if (orbitId === -1) {
-                lastTime = new Date();
-                orbitId  = requestAnimationFrame(updatePlanets);
-            } else {
-                cancelAnimationFrame(orbitId);
-                orbitId = -1;
+            if (onSolarSys) {
+                if (orbitId === -1) {
+                    lastTime = new Date();
+                    orbitId  = requestAnimationFrame(updatePlanets);
+                } else {
+                    cancelAnimationFrame(orbitId);
+                    orbitId = -1;
+                }
             }
             break;
         case "ArrowRight":
         case "ArrowLeft":
-            if (event.key === "ArrowRight") {
-                ++planetIndex;
-                if (planetIndex > 8) {
-                    planetIndex = 8;
+            if (onSolarSys) {
+                if (event.key === "ArrowRight") {
+                    ++planetIndex;
+                    if (planetIndex > 8) {
+                        planetIndex = 8;
+                    }
+                } else {
+                    --planetIndex;
+                    if (planetIndex < 0) {
+                        planetIndex = 0;
+                    }
                 }
-            } else {
-                --planetIndex;
-                if (planetIndex < 0) {
-                    planetIndex = 0;
-                }
+                
+                const celestialBodySelect = celestialBodies[planetIndex];
+                renameLabel();
+    
+                select.style.width  = `${celestialBodySelect.size * celestialBodySelect.sizeAmp * zoomMagnitudes[zoomIndex] * 1.25}vmin`;
+                select.style.height = `${celestialBodySelect.size * celestialBodySelect.sizeAmp * zoomMagnitudes[zoomIndex] * 1.25}vmin`;
+                select.style.top    = `calc(50% + ${celestialBodySelect.distance * zoomMagnitudes[zoomIndex] * Math.sin(celestialBodySelect.theta)}vmin)`;
+                select.style.left   = `calc(50% + ${celestialBodySelect.distance * zoomMagnitudes[zoomIndex] * Math.cos(celestialBodySelect.theta)}vmin)`;
             }
-            
-            const celestialBodySelect = celestialBodies[planetIndex];
-            renameLabel();
-
-            select.style.width  = `${celestialBodySelect.size * celestialBodySelect.sizeAmp * zoomMagnitudes[zoomIndex] * 1.25}vmin`;
-            select.style.height = `${celestialBodySelect.size * celestialBodySelect.sizeAmp * zoomMagnitudes[zoomIndex] * 1.25}vmin`;
-            select.style.top    = `calc(50% + ${celestialBodySelect.distance * zoomMagnitudes[zoomIndex] * Math.sin(celestialBodySelect.theta)}vmin)`;
-            select.style.left   = `calc(50% + ${celestialBodySelect.distance * zoomMagnitudes[zoomIndex] * Math.cos(celestialBodySelect.theta)}vmin)`;
             break;
         case "ArrowUp":
         case "ArrowDown":
@@ -256,11 +338,93 @@ document.onkeydown = event => {
             select.style.width  = `${celestialBodyResize.size * celestialBodyResize.sizeAmp * zoomMagnitudes[zoomIndex] * 1.2}vmin`;
             select.style.height = `${celestialBodyResize.size * celestialBodyResize.sizeAmp * zoomMagnitudes[zoomIndex] * 1.2}vmin`;
             break;
-        case "Enter":
-            document.body.style.backgroundColor = "#1899DD";
-            break;
     }
 };
+
+function reload() {
+    const isPortrait = window.innerHeight > window.innerWidth;
+    const aspectRatio = isPortrait ? window.innerHeight / window.innerWidth : window.innerWidth / window.innerHeight;
+    
+    if (aspectRatio > 1.2) {
+        const extra = (aspectRatio - 1.2) * 10;
+        const dimensions = 40 + (extra > 20 ? 20 : extra);
+        
+        if (isPortrait) {
+            planetView.style.width = `${dimensions}vmin`;
+            planetView.style.height = `${dimensions}vmin`;
+            
+            description.style.width = `${dimensions * 1.60}vmin`;
+            description.style.height = `${dimensions}vmin`;
+            
+            scan.style.width = `${dimensions * 1.20}vmin`;
+            scan.style.height = `${dimensions * 0.3125}vmin`;
+            
+            descriptionText.style.fontSize = `${dimensions * 0.075}vmin`;
+            descriptionText.style.paddingLeft = `${dimensions * 0.125}vmin`;
+            descriptionText.style.paddingRight = `${dimensions * 0.0625}vmin`;
+            descriptionText.style.paddingTop = `${dimensions * 0.0375}vmin`;
+            descriptionText.style.paddingBottom = `${dimensions * 0.0375}vmin`;
+            descriptionText.style.lineHeight = `${dimensions * 0.125}vmin`;
+            
+            descriptionTitle.style.fontSize = `${dimensions * 0.15}vmin`;
+            descriptionTitle.style.paddingLeft = `${dimensions * 0.0625}vmin`;
+            descriptionTitle.style.paddingTop = `${dimensions * 0.0375}vmin`;
+            
+            planetView.style.left = "50%";
+            planetView.style.top  = `calc(50% - ${dimensions / 2 + 10}vmin)`;
+            
+            description.style.translate    = "-50% 50%";
+            description.style.left         = "50%";
+            description.style.bottom       = `calc(50% - ${dimensions * 0.3125 + 10}vmin)`;
+            
+            scan.style.translate = "-50% 50%";
+            scan.style.left      = "50%";
+            scan.style.bottom    = `calc(50% - ${dimensions * 0.96875 + 17.5}vmin)`;
+            scan.style.fontSize  = `${dimensions * 0.3125 * 0.75}vmin`;
+        } else {
+            planetView.style.width = `${dimensions * 1.25}vmin`;
+            planetView.style.height = `${dimensions * 1.25}vmin`;
+            
+            description.style.width = `${dimensions * 1.6}vmin`;
+            description.style.height = `${dimensions * 0.78125}vmin`;
+            
+            scan.style.width = `${dimensions}vmin`;
+            scan.style.height = `${dimensions * 0.2}vmin`;
+            
+            descriptionText.style.fontSize = `${dimensions * 0.075}vmin`;
+            descriptionText.style.paddingLeft = `${dimensions * 0.125}vmin`;
+            descriptionText.style.paddingRight = `${dimensions * 0.0625}vmin`;
+            descriptionText.style.paddingTop = `${dimensions * 0.0375}vmin`;
+            descriptionText.style.paddingBottom = `${dimensions * 0.0375}vmin`;
+            descriptionText.style.lineHeight = `${dimensions * 0.125}vmin`;
+            
+            descriptionTitle.style.fontSize = `${dimensions * 0.15}vmin`;
+            descriptionTitle.style.paddingLeft = `${dimensions * 0.0625}vmin`;
+            descriptionTitle.style.paddingTop = `${dimensions * 0.0375}vmin`;
+            
+            planetView.style.top  = "50%";
+            planetView.style.left = `calc(50% - ${dimensions / 2 + 10}vmin)`;
+            
+            description.style.translate = "50% -50%";
+            description.style.top       = `calc(50% - ${dimensions * 0.125}vmin)`;
+            description.style.right     = `calc(50% - ${dimensions * 0.8 + 10}vmin)`;
+            
+            scan.style.translate = "50% 50%";
+            scan.style.bottom    = `calc(50% - ${dimensions * 0.46875}vmin)`;
+            scan.style.right     = `calc(50% - ${dimensions * 0.8 + 10}vmin)`;
+            scan.style.fontSize  = `calc(${dimensions * 0.2 * 0.75}vmin)`;
+        }
+    } else {
+        planetView.style.width = "40vmin";
+        planetView.style.height = "40vmin";
+        
+        if (isPortrait) {
+            
+        } else {
+            
+        }
+    }
+}
 
 function resize() {
     const zoom = zoomMagnitudes[zoomIndex];

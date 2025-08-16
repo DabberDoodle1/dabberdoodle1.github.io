@@ -13,7 +13,6 @@ body {
     height: 100vh;
     width: 100vw;
     background: #000000;
-    transition: background-color 1.8s ease-in-out;
 }
 
 .center {
@@ -113,4 +112,67 @@ body {
 
 #neptune-orbit {
     background: #1111ff;
+}
+
+#planet-view {
+    background: url("res/earth.png");
+    background-position: center;
+    background-size: cover;
+    animation: oscillate 2.3s ease-in-out infinite alternate;
+}
+
+#description {
+    position: absolute;
+    translate: -50% -50%;
+    color: #FFFFFF;
+    background-color: #57575727;
+    backdrop-filter: blur(2px) sepia(10%);
+    border: 2px solid #ABABAB3F;
+    border-radius: 6px;
+}
+
+#description-text {
+    position: absolute;
+    top: 25%;
+    height: 70%;
+    overflow: scroll;
+}
+
+#scan {
+    position: absolute;
+    color: #FFFFFF;
+    background-color: #23AB23B0;
+    border: 2px solid #00AB00;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.button {
+    position: absolute;
+}
+
+#toggle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 10px;
+    border: 2px solid #7878787f;
+    width: 17.5vmin;
+    height: 17.5vmin;
+    background-color: #000000;
+    background-image: url("res/solar_system.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 80%;
+}
+
+@keyframes oscillate {
+    0%, 7.5% {
+        rotate: 2.3deg;
+    }
+    92.5%, 100% {
+        rotate: -2.3deg;
+    }
 }
