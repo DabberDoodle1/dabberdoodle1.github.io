@@ -7,6 +7,8 @@ const toggle           = document.getElementById("toggle");
 planetNavigation.style.display = "none";
 
 const planetView       = document.getElementById("planet-view");
+const planetImage      = document.getElementById("planet-image");
+const line             = document.getElementById("line");
 const description      = document.getElementById("description");
 const descriptionText  = document.getElementById("description-text");
 const descriptionTitle = document.getElementById("description-title");
@@ -52,11 +54,8 @@ for (let i = 0; i < 8; ++i) {
     }
 }
 
-const select         = document.getElementById("select");
 const magnitudeLabel = document.getElementById("magnitudeLabel");
-
-select.style.top  = "50%";
-select.style.left = "50%";
+magnitudeLabel.innerHTML = "sun size multiplier: 20,000x<br/>planet size multiplier: 2,000,000x";
 
 // DOM elements
 const vminPerAu = 90 / 60.1;
@@ -66,7 +65,7 @@ const celestialBodies = [
         planet:   document.getElementById("sun"),
         distance: 0,
         size:     vminPerAu * 1391400 / 149597870700,
-        sizeAmp:  1,
+        sizeAmp:  20000,
         speed:    0,
         theta:    0
     },
@@ -75,7 +74,7 @@ const celestialBodies = [
         planet:   document.getElementById("mercury"),
         distance: vminPerAu * 0.39,
         size:     vminPerAu * 4880 / 149597870700,
-        sizeAmp:  1,
+        sizeAmp:  2000000,
         speed:    1 * Math.PI,
         theta:    Math.random() * 360
     },
@@ -84,7 +83,7 @@ const celestialBodies = [
         planet:   document.getElementById("venus"),
         distance: vminPerAu * 0.72,
         size:     vminPerAu * 12104 / 149597870700,
-        sizeAmp:  1,
+        sizeAmp:  2000000,
         speed:    88 / 225 * Math.PI,
         theta:    Math.random() * 360
     },
@@ -93,7 +92,7 @@ const celestialBodies = [
         planet:   document.getElementById("earth"),
         distance: vminPerAu * 1.00,
         size:     vminPerAu * 12756 / 149597870700,
-        sizeAmp:  1,
+        sizeAmp:  2000000,
         speed:    88 / 365.25 * Math.PI,
         theta:    Math.random() * 360
     },
@@ -102,7 +101,7 @@ const celestialBodies = [
         planet:   document.getElementById("mars"),
         distance: vminPerAu * 1.52,
         size:     vminPerAu * 6792 / 149597870700,
-        sizeAmp:  1,
+        sizeAmp:  2000000,
         speed:    88 / 687 * Math.PI,
         theta:    Math.random() * 360
     },
@@ -111,7 +110,7 @@ const celestialBodies = [
         planet:   document.getElementById("jupiter"),
         distance: vminPerAu * 5.20,
         size:     vminPerAu * 129884 / 149597870700,
-        sizeAmp:  1,
+        sizeAmp:  2000000,
         speed:    88 / 4333 * Math.PI,
         theta:    Math.random() * 360
     },
@@ -120,7 +119,7 @@ const celestialBodies = [
         planet:   document.getElementById("saturn"),
         distance: vminPerAu * 9.68,
         size:     vminPerAu * 120536 / 149597870700,
-        sizeAmp:  1,
+        sizeAmp:  2000000,
         speed:    88 / 10759 * Math.PI,
         theta:    Math.random() * 360
     },
@@ -129,7 +128,7 @@ const celestialBodies = [
         planet:   document.getElementById("uranus"),
         distance: vminPerAu * 19.22,
         size:     vminPerAu * 51118 / 149597870700,
-        sizeAmp:  1,
+        sizeAmp:  2000000,
         speed:    88 / 30688 * Math.PI,
         theta:    Math.random() * 360
     },
@@ -138,7 +137,7 @@ const celestialBodies = [
         planet:   document.getElementById("neptune"),
         distance: vminPerAu * 30.05,
         size:     vminPerAu * 49528 / 149597870700,
-        sizeAmp:  1,
+        sizeAmp:  2000000,
         speed:    88 / 60190 * Math.PI,
         theta:    Math.random() * 360
     }
@@ -156,29 +155,21 @@ const zoomMagnitudes = [
     80
 ];
 
-const planetSizes = [
-    1,
-    100,
-    1000,
-    1000000,
-    2000000
-];
-
 const min = window.innerHeight < window.innerWidth ? window.innerHeight : window.innerWidth;
 const max = window.innerHeight > window.innerWidth ? window.innerHeight : window.innerWidth;
 
-let zoomIndex   = 1;
-let planetIndex = 0;
-let sizeIndex   = 0;
-let lastTime    = new Date();
+let zoomIndex  = 1;
+let lastTime   = new Date();
 let orbitId;
-let onSolarSys  = true;
+let onSolarSys = true;
+let isScanning = false;
+let progress   = 0;
 
 let touchStartY = 0;
 let lastTouchTime = 0;
 
 if (userOnMobile) {
-	document.ontouchstart = event => {
+  document.ontouchstart = event => {
 		event.preventDefault();
 		touchStartY   = event.touches[0].clientY;
 	}
@@ -212,18 +203,6 @@ if (userOnMobile) {
 
 		resize();
 	}
-	
-	sizeIndex = 4;
-	for (let i in celestialBodies) {
-		celestialBodies[i].sizeAmp = i == 0 ? planetSizes[sizeIndex] / 100 : planetSizes[sizeIndex];
-	}
-
-	select.style.display = "none";
-	magnitudeLabel.innerHTML = "sun size multiplier: 20,000x<br/>planet size multiplier: 2,000,000x";
-	
-	resize();
-} else {
-	renameLabel();
 }
 
 toggle.addEventListener("click", () => {
@@ -239,6 +218,54 @@ toggle.addEventListener("click", () => {
         
         planetNavigation.style.display = "none";
         solarSystem.style.display = "block";
+    }
+});
+
+scan.addEventListener("click", () => {
+    if (!isScanning) {
+        let lastScan = new Date();
+        isScanning   = true;
+        
+        planetImage.style.animationPlayState = "paused";
+
+        const scanAnimation = () => {
+            const now   = new Date();
+            const delta = now - lastScan;
+            const gamma = progress > 1750
+                ? (progress - 1750 > 875
+                    ? 1 - (progress - 1750) / 1750
+                    : (progress - 1750) / 1750)
+                : (progress > 875
+                    ? 1 - progress / 1750
+                    : progress / 1750) ;
+
+            lastScan  = now;
+            progress += delta * (0.75 + gamma);
+
+            if (progress > 3500) {
+                progress   = 0;
+                isScanning = false;
+                
+                line.style.top       = "0%";
+                line.style.translate = "0 -100%";
+
+                planetImage.style.animationPlayState = "running";
+
+                return;
+            }
+            
+            if (progress > 1750) {
+                line.style.top       = `${100 - (progress - 1750) / 17.5}%`;
+                line.style.translate = `0 ${-(progress - 1750) / 17.5}%`;
+            } else {
+                line.style.top       = `${progress / 17.5}%`;
+                line.style.translate = `0 ${progress / 17.5 - 100}%`;
+            }
+
+            requestAnimationFrame(scanAnimation);
+        };
+
+        requestAnimationFrame(scanAnimation);
     }
 });
 
@@ -281,62 +308,6 @@ document.onkeydown = event => {
                     orbitId = -1;
                 }
             }
-            break;
-        case "ArrowRight":
-        case "ArrowLeft":
-            if (onSolarSys) {
-                if (event.key === "ArrowRight") {
-                    ++planetIndex;
-                    if (planetIndex > 8) {
-                        planetIndex = 8;
-                    }
-                } else {
-                    --planetIndex;
-                    if (planetIndex < 0) {
-                        planetIndex = 0;
-                    }
-                }
-                
-                const celestialBodySelect = celestialBodies[planetIndex];
-                renameLabel();
-    
-                select.style.width  = `${celestialBodySelect.size * celestialBodySelect.sizeAmp * zoomMagnitudes[zoomIndex] * 1.25}vmin`;
-                select.style.height = `${celestialBodySelect.size * celestialBodySelect.sizeAmp * zoomMagnitudes[zoomIndex] * 1.25}vmin`;
-                select.style.top    = `calc(50% + ${celestialBodySelect.distance * zoomMagnitudes[zoomIndex] * Math.sin(celestialBodySelect.theta)}vmin)`;
-                select.style.left   = `calc(50% + ${celestialBodySelect.distance * zoomMagnitudes[zoomIndex] * Math.cos(celestialBodySelect.theta)}vmin)`;
-            }
-            break;
-        case "ArrowUp":
-        case "ArrowDown":
-            const celestialBodyResize = celestialBodies[planetIndex];
-            
-            for (let i = 0; i < 5; ++i) {
-                const planetSize = planetIndex === 0 ? planetSizes[i] / 100 : planetSizes[i];
-                
-                if (planetSize === celestialBodyResize.sizeAmp) {
-                    sizeIndex = i;
-                    break;
-                }
-            }
-            
-            if (event.key === "ArrowUp") {
-                ++sizeIndex;
-                if (sizeIndex > 4) {
-                    sizeIndex = 4;
-                }
-            } else {
-                --sizeIndex;
-                if (sizeIndex < 0) {
-                    sizeIndex = 0;
-                }
-            }
-
-            celestialBodyResize.sizeAmp = planetIndex === 0 ? planetSizes[sizeIndex] / 100 : planetSizes[sizeIndex];
-            resizePlanet(celestialBodyResize);
-            renameLabel();
-            
-            select.style.width  = `${celestialBodyResize.size * celestialBodyResize.sizeAmp * zoomMagnitudes[zoomIndex] * 1.2}vmin`;
-            select.style.height = `${celestialBodyResize.size * celestialBodyResize.sizeAmp * zoomMagnitudes[zoomIndex] * 1.2}vmin`;
             break;
     }
 };
@@ -391,12 +362,12 @@ function reload() {
             scan.style.width = `${dimensions}vmin`;
             scan.style.height = `${dimensions * 0.2}vmin`;
             
-            descriptionText.style.fontSize = `${dimensions * 0.075}vmin`;
+            descriptionText.style.fontSize = `${dimensions * 0.78125 * 0.07}vmin`;
             descriptionText.style.paddingLeft = `${dimensions * 0.125}vmin`;
             descriptionText.style.paddingRight = `${dimensions * 0.0625}vmin`;
             descriptionText.style.paddingTop = `${dimensions * 0.0375}vmin`;
             descriptionText.style.paddingBottom = `${dimensions * 0.0375}vmin`;
-            descriptionText.style.lineHeight = `${dimensions * 0.125}vmin`;
+            descriptionText.style.lineHeight = `${dimensions * 0.78125 * 0.105}vmin`;
             
             descriptionTitle.style.fontSize = `${dimensions * 0.15}vmin`;
             descriptionTitle.style.paddingLeft = `${dimensions * 0.0625}vmin`;
@@ -433,11 +404,6 @@ function resize() {
     sun.planet.style.width  = `${sun.size * sun.sizeAmp * zoom}vmin`;
     sun.planet.style.height = `${sun.size * sun.sizeAmp * zoom}vmin`;
     
-    if (planetIndex === 0) {
-        select.style.width  = `${sun.size * sun.sizeAmp * zoom * 1.25}vmin`;
-        select.style.height = `${sun.size * sun.sizeAmp * zoom * 1.25}vmin`;
-    }
-
     for (let i = 1; i < 9; ++i) {
         const planet = celestialBodies[i];
         const size = planet.distance * zoom;
@@ -458,13 +424,6 @@ function resize() {
         planet.planet.style.height = `${planet.size * planet.sizeAmp * zoom}vmin`;
         planet.planet.style.top    = `calc(50% + ${size * Math.sin(planet.theta)}vmin)`;
         planet.planet.style.left   = `calc(50% + ${size * Math.cos(planet.theta)}vmin)`;
-        
-        if (i === planetIndex) {
-            select.style.top    = `calc(50% + ${size * Math.sin(planet.theta)}vmin)`;
-            select.style.left   = `calc(50% + ${size * Math.cos(planet.theta)}vmin)`;
-            select.style.width  = `${planet.size * planet.sizeAmp * zoom * 1.25}vmin`;
-            select.style.height = `${planet.size * planet.sizeAmp * zoom * 1.25}vmin`;
-        }
     }
 }
 
@@ -491,21 +450,10 @@ function updatePlanets() {
         planet.planet.style.top  = `calc(50% + ${planet.distance * zoomMagnitudes[zoomIndex] * Math.sin(planet.theta)}vmin)`;
         planet.planet.style.left = `calc(50% + ${planet.distance * zoomMagnitudes[zoomIndex] * Math.cos(planet.theta)}vmin)`;
         
-        if (i === planetIndex) {
-            select.style.top    = `calc(50% + ${planet.distance * zoomMagnitudes[zoomIndex] * Math.sin(planet.theta)}vmin)`;
-            select.style.left   = `calc(50% + ${planet.distance * zoomMagnitudes[zoomIndex] * Math.cos(planet.theta)}vmin)`;
-        }
-        
         resizePlanet(planet);
     }
 
     orbitId = requestAnimationFrame(updatePlanets);
-}
-
-function renameLabel() {
-    const celestialBody = celestialBodies[planetIndex];
-    magnitudeLabel.textContent = `${celestialBody.planet.id} size multiplier:
-    ${celestialBody.sizeAmp.toLocaleString()}x`;
 }
 
 orbitId = requestAnimationFrame(updatePlanets);
