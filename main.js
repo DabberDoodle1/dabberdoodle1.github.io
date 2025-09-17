@@ -166,20 +166,20 @@ const zoomMagnitudes = [
 ];
 
 const slideUrls = [
-    "res/slideshow/9yr_old.jpg",
-    "res/slideshow/Hacking.jpg",
-    "res/slideshow/Family.jpg",
-    "res/slideshow/Friends.png",
-    "res/slideshow/Schools.jpg",
-    "res/slideshow/Lost_dreams.jpg",
-    "res/slideshow/Japanese_is_hard.jpg",
-    "res/slideshow/Google.png"
+    "res/9yr_old.jpg",
+    "res/Hacking.jpg",
+    "res/Family.jpg",
+    "res/Friends.png",
+    "res/Schools.jpg",
+    "res/Lost_dreams.jpg",
+    "res/Japanese_is_hard.jpg",
+    "res/Google.png"
 ];
 
 const peers = [
-    "res/slideshow/Denver.png",
-    "res/slideshow/Matthew.png",
-    "res/slideshow/Vince.png",
+    "res/Denver.png",
+    "res/Matthew.png",
+    "res/Vince.png",
 ];
 
 const descUrls   = [
