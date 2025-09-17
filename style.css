@@ -26,6 +26,36 @@ body {
     border-radius: 50%;
 }
 
+#title-page {
+    width: 100%;
+    height: 100%;
+    background: #0000001F;
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+#title-page > h1 {
+    color: #FFFFFF;
+    font-size: 10vmin;
+}
+
+#title-page > h2 {
+    color: #FFFFFF;
+    font-size: 3.75vmin;
+    font-weight: 600;
+}
+
+#title-page > h3 {
+    color: #FFFFFF;
+    font-size: 4.5vmin;
+    font-weight: 300;
+    letter-spacing: 1.5px;
+}
+
 #magnitudeLabel {
     position: absolute;
     left: 0;
@@ -114,6 +144,24 @@ body {
     background: #1111ff;
 }
 
+#slide-overlap {
+    width: 100vw;
+    height: 100vh;
+    background: #000000;
+    z-index: 99999;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+#slide-image {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
 #planet-view {
     overflow: hidden;
 }
@@ -124,7 +172,14 @@ body {
     background: url("res/earth.png");
     background-position: center;
     background-size: contain;
-    animation: oscillate 2.3s ease-in-out infinite alternate;
+    animation: oscillate 4.6s ease-in-out infinite alternate;
+}
+
+#planet-glow {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background: #12FF12;
 }
 
 #line {
@@ -171,6 +226,13 @@ body {
 
 .button {
     position: absolute;
+    color: #FFFFFF;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #2323231F;
+    border: 2px solid #484848;
+    border-radius: 4px;
 }
 
 #toggle {
